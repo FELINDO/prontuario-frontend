@@ -6,8 +6,8 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    // URL base da sua API de produção
-    const API_BASE_URL = 'https://prontuario-backend-java.onrender.com';
+    // URL base da sua API de produção no Render
+    const API_BASE_URL = 'https://prontuario-backend-java.onrender.com/prontuario-backend';
 
     let selectedPatientId = null;
 
@@ -244,28 +244,28 @@ document.addEventListener('DOMContentLoaded', () => {
             ui.myFullHistory.innerHTML = '';
             if (!atendimentos || atendimentos.length === 0) {
                 ui.myFullHistory.innerHTML = '<p class="placeholder-text">Você ainda não possui atendimentos registrados.</p>';
-                return;
+            } else {
+                atendimentos.forEach(att => {
+                    const detailsItem = document.createElement('details');
+                    detailsItem.className = 'history-details-item';
+                    const summary = document.createElement('summary');
+                    summary.className = 'history-summary';
+                    summary.innerHTML = `<span>${att.data} - Atendido(a) por: <strong>${att.profissional}</strong></span>`;
+                    const content = document.createElement('div');
+                    content.className = 'history-content';
+                    content.innerHTML = `
+                        <p><strong>Motivo da Consulta:</strong> ${att.motivo || 'Não informado'}</p>
+                        <p><strong>Descrição e Anamnese:</strong> ${att.descricao || 'Não informado'}</p>
+                        <p><strong>Procedimentos Realizados:</strong> ${att.procedimentos_realizados || 'Nenhum'}</p>
+                        <p><strong>Exames Solicitados:</strong> ${att.solicitacoes_exames || 'Nenhum'}</p>
+                        <p><strong>Resultados de Exames:</strong> ${att.resultados_exames || 'Nenhum'}</p>
+                        <p><strong>Nível de Risco:</strong> ${att.risco || 'Não classificado'}</p>
+                    `;
+                    detailsItem.appendChild(summary);
+                    detailsItem.appendChild(content);
+                    ui.myFullHistory.appendChild(detailsItem);
+                });
             }
-            atendimentos.forEach(att => {
-                const detailsItem = document.createElement('details');
-                detailsItem.className = 'history-details-item';
-                const summary = document.createElement('summary');
-                summary.className = 'history-summary';
-                summary.innerHTML = `<span>${att.data} - Atendido(a) por: <strong>${att.profissional}</strong></span>`;
-                const content = document.createElement('div');
-                content.className = 'history-content';
-                content.innerHTML = `
-                    <p><strong>Motivo da Consulta:</strong> ${att.motivo || 'Não informado'}</p>
-                    <p><strong>Descrição e Anamnese:</strong> ${att.descricao || 'Não informado'}</p>
-                    <p><strong>Procedimentos Realizados:</strong> ${att.procedimentos_realizados || 'Nenhum'}</p>
-                    <p><strong>Exames Solicitados:</strong> ${att.solicitacoes_exames || 'Nenhum'}</p>
-                    <p><strong>Resultados de Exames:</strong> ${att.resultados_exames || 'Nenhum'}</p>
-                    <p><strong>Nível de Risco:</strong> ${att.risco || 'Não classificado'}</p>
-                `;
-                detailsItem.appendChild(summary);
-                detailsItem.appendChild(content);
-                ui.myFullHistory.appendChild(detailsItem);
-            });
         } catch (error) {
             console.error(error);
             ui.myFullHistory.innerHTML = '<p class="placeholder-text error">Não foi possível carregar seu histórico.</p>';

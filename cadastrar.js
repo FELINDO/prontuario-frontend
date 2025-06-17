@@ -1,4 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // --- URL Base da API de Produção ---
+    const API_BASE_URL = 'https://prontuario-backend-java.onrender.com/prontuario-backend';
+
     // --- Seleção dos Elementos da UI ---
     const userTypeSelect = document.getElementById('userType');
     const patientFields = document.getElementById('patient-specific-fields');
@@ -22,7 +25,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Garante que o estado inicial (ao carregar a página) esteja correto
     togglePatientFields();
 
-
     // --- LÓGICA PARA MOSTRAR/ESCONDER SENHA ---
     togglePassword.addEventListener('click', function () {
         // Alterna o tipo do input entre 'password' e 'text'
@@ -33,7 +35,6 @@ document.addEventListener('DOMContentLoaded', () => {
         this.classList.toggle('fa-eye-slash');
         this.classList.toggle('active');
     });
-
     
     // --- LÓGICA DE SUBMISSÃO DO FORMULÁRIO DE CADASTRO ---
     registerForm.addEventListener('submit', async (event) => {
@@ -58,8 +59,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            // Envia os dados para o back-end Java
-            const response = await fetch('https://prontuario-backend-java.onrender.com', {
+            // Envia os dados para o back-end Java na URL de produção
+            const response = await fetch(`${API_BASE_URL}/api/cadastrar`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)
@@ -81,7 +82,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 feedback.className = 'feedback-text error';
             }
         } catch (error) {
-            feedback.textContent = 'Erro de conexão com o servidor. Verifique se o backend está no ar.';
+            feedback.textContent = 'Erro de conexão com o servidor. Tente novamente.';
             feedback.className = 'feedback-text error';
             feedback.classList.remove('hidden');
             console.error("Erro no fetch do cadastro:", error);
