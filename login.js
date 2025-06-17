@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // URL CORRIGIDA: Aponta para a raiz do servidor, sem o nome do projeto.
+    // URL Base da API de Produção
     const API_BASE_URL = 'https://prontuario-backend-java.onrender.com';
 
     // --- Seleção dos Elementos da UI ---
@@ -17,50 +17,38 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         try {
-            // A URL da API é construída a partir da base
             const response = await fetch(`${API_BASE_URL}/api/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(loginData)
             });
 
-            // Verifica se a resposta do servidor foi um erro (como 404 ou 500)
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
+            // Lê o corpo da resposta como JSON, independentemente do status
             const result = await response.json();
 
-            if (result.success) {
+            // Verifica se a resposta foi um sucesso (status 2xx) E se a lógica interna do backend deu certo
+            if (response.ok && result.success) {
                 // Login bem-sucedido!
                 loginError.classList.add('hidden');
-                
-                // Armazena os dados do usuário no localStorage para usar na próxima página
                 result.user.lastAccess = new Date().toLocaleString('pt-BR');
                 localStorage.setItem('currentUser', JSON.stringify(result.user));
-                
-                // Redireciona para a tela principal do app
                 window.location.href = 'app.html';
             } else {
-                // Mostra a mensagem de erro vinda do servidor
-                loginError.textContent = result.message;
-                loginError.classList.remove('hidden');
+                // Se a resposta não foi OK ou result.success é false, mostra a mensagem de erro vinda do servidor
+                throw new Error(result.message || 'Erro desconhecido retornado pelo servidor.');
             }
         } catch (error) {
-            // Este bloco "catch" é ativado se a rede falhar ou se a resposta não for um JSON válido
             console.error("Erro no fetch de login:", error);
-            loginError.textContent = 'Erro de conexão ou resposta inesperada do servidor.';
+            // AGORA, a mensagem de erro exata do Java aparecerá aqui!
+            loginError.textContent = error.message;
             loginError.classList.remove('hidden');
         }
     });
 
     // --- Lógica para Mostrar/Esconder Senha ---
     togglePassword.addEventListener('click', function () {
-        // Alterna o tipo do input entre 'password' e 'text'
         const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
         passwordInput.setAttribute('type', type);
-        
-        // Alterna o ícone entre 'fa-eye' e 'fa-eye-slash' e a cor
         this.classList.toggle('fa-eye-slash');
         this.classList.toggle('active');
     });
