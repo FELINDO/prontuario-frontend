@@ -55,16 +55,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)
             });
-
             const result = await response.json();
-
             if (!response.ok) {
                  throw new Error(result.message || `HTTP error! status: ${response.status}`);
             }
-
             feedback.textContent = result.message;
             feedback.classList.remove('hidden');
-
             if (result.success) {
                 feedback.className = 'feedback-text success';
                 setTimeout(() => { window.location.href = 'login.html'; }, 2000);
