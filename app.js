@@ -6,6 +6,9 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
+    // URL base da sua API de produção
+    const API_BASE_URL = 'https://prontuario-backend-java.onrender.com';
+
     let selectedPatientId = null;
 
     // --- Mapeamento de Elementos da UI ---
@@ -77,7 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
         element.textContent = message;
         element.className = `feedback-text ${isSuccess ? 'success' : 'error'}`;
         element.classList.remove('hidden');
-        setTimeout(() => element.classList.add('hidden'), 3000);
+        setTimeout(() => element.classList.add('hidden'), 4000);
     };
 
     // --- Funções de Lógica do App ---
@@ -89,20 +92,20 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         try {
-            const response = await fetch(`http://localhost:8080/prontuario-backend/api/buscarPacientes?termo=${termo}`);
+            const response = await fetch(`${API_BASE_URL}/api/buscarPacientes?termo=${termo}`);
             const pacientes = await response.json();
             ui.searchResultList.innerHTML = '';
             if (pacientes.length === 0) {
                 ui.searchResultList.innerHTML = '<p class="placeholder-text">Nenhum paciente encontrado.</p>';
-                return;
+            } else {
+                pacientes.forEach(p => {
+                    const item = document.createElement('div');
+                    item.className = 'patient-list-item';
+                    item.textContent = `${p.name} - CPF: ${p.cpf}`;
+                    item.onclick = () => loadFullProntuarioForProf(p.id);
+                    ui.searchResultList.appendChild(item);
+                });
             }
-            pacientes.forEach(p => {
-                const item = document.createElement('div');
-                item.className = 'patient-list-item';
-                item.textContent = `${p.name} - CPF: ${p.cpf}`;
-                item.onclick = () => loadFullProntuarioForProf(p.id);
-                ui.searchResultList.appendChild(item);
-            });
         } catch (error) {
             console.error('Erro ao buscar pacientes:', error);
         }
@@ -113,13 +116,12 @@ document.addEventListener('DOMContentLoaded', () => {
         ui.searchResultList.innerHTML = '';
         ui.searchInput.value = '';
         try {
-            const response = await fetch(`http://localhost:8080/prontuario-backend/api/carregarProntuario?id=${pacienteId}`);
+            const response = await fetch(`${API_BASE_URL}/api/carregarProntuario?id=${pacienteId}`);
             const prontuario = await response.json();
-            const perfil = prontuario.perfil;
-            ui.displayPatientName.textContent = perfil.name;
+            ui.displayPatientName.textContent = prontuario.perfil.name;
             ui.professionalHistoryBox.innerHTML = '';
             if (prontuario.atendimentos.length === 0) {
-                ui.professionalHistoryBox.innerHTML = '<p class="placeholder-text">Este paciente ainda não possui atendimentos registrados.</p>';
+                ui.professionalHistoryBox.innerHTML = '<p class="placeholder-text">Este paciente ainda não possui atendimentos.</p>';
             } else {
                 prontuario.atendimentos.forEach(att => {
                     const entry = document.createElement('div');
@@ -147,12 +149,12 @@ document.addEventListener('DOMContentLoaded', () => {
             resultadosExames: ui.addAttendanceForm.resultados.value,
             risco: ui.addAttendanceForm.risco.value,
         };
-        if (!atendimentoData.motivoConsulta || !atendimentoData.descricaoGeral) {
-            showFeedback(ui.attendanceFeedback, "Motivo da consulta e descrição geral são obrigatórios.", false);
+        if (!atendimentoData.motivoConsulta) {
+            showFeedback(ui.attendanceFeedback, "O motivo da consulta é obrigatório.", false);
             return;
         }
         try {
-            const response = await fetch('http://localhost:8080/prontuario-backend/api/adicionarAtendimento', {
+            const response = await fetch(`${API_BASE_URL}/api/adicionarAtendimento`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(atendimentoData)
@@ -178,7 +180,6 @@ document.addEventListener('DOMContentLoaded', () => {
         requests.forEach(req => {
             const itemDiv = document.createElement('div');
             itemDiv.className = 'request-item';
-            itemDiv.dataset.pacienteId = req.pacienteId;
             itemDiv.innerHTML = `<h4>${req.pacienteNome}</h4><p><strong>CPF:</strong> ${req.pacienteCpf} | <strong>Idade:</strong> ${req.pacienteIdade}</p><p class="motivo">"${req.motivoPaciente}"</p>`;
             itemDiv.addEventListener('click', () => {
                 showScreen('professional-screen');
@@ -189,16 +190,16 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     
     const fetchAndShowRequests = async () => {
+        showScreen('requests-screen');
+        ui.requestsListContainer.innerHTML = '<p class="placeholder-text">Carregando solicitações...</p>';
         try {
-            const response = await fetch('http://localhost:8080/prontuario-backend/api/listarSolicitacoes');
-            if (!response.ok) throw new Error('Falha ao buscar dados do servidor.');
+            const response = await fetch(`${API_BASE_URL}/api/listarSolicitacoes`);
+            if (!response.ok) throw new Error('Falha ao buscar dados.');
             const requests = await response.json();
             renderRequests(requests);
-            showScreen('requests-screen');
         } catch (error) {
             console.error("Erro ao buscar solicitações:", error);
             ui.requestsListContainer.innerHTML = '<p class="placeholder-text error">Não foi possível carregar as solicitações.</p>';
-            showScreen('requests-screen');
         }
     };
 
@@ -210,7 +211,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         const requestData = { pacienteId: currentUser.id, motivo: motivo };
         try {
-            const response = await fetch('http://localhost:8080/prontuario-backend/api/solicitarConsulta', {
+            const response = await fetch(`${API_BASE_URL}/api/solicitarConsulta`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(requestData)
@@ -225,19 +226,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const loadPatientDataAndHistory = async (patientId) => {
         try {
-            const response = await fetch(`http://localhost:8080/prontuario-backend/api/carregarProntuario?id=${patientId}`);
+            const response = await fetch(`${API_BASE_URL}/api/carregarProntuario?id=${patientId}`);
             if (!response.ok) throw new Error('Falha ao carregar dados do prontuário.');
             const prontuario = await response.json();
             const perfil = prontuario.perfil;
             const atendimentos = prontuario.atendimentos;
-            ui.myPatientName.textContent = perfil.name;
-            ui.myPatientCpf.textContent = perfil.cpf;
-            ui.myPatientAge.textContent = perfil.age;
-            ui.myPatientSexo.textContent = perfil.sexo;
+            
+            ui.myPatientName.textContent = perfil.name || '';
+            ui.myPatientCpf.textContent = perfil.cpf || '';
+            ui.myPatientAge.textContent = perfil.age || '';
+            ui.myPatientSexo.textContent = perfil.sexo || '';
             ui.myPatientAllergies.textContent = perfil.alergias || 'Nenhuma informada';
             ui.myPatientInsulin.textContent = perfil.necessita_insulina ? 'Sim' : 'Não';
             ui.myPatientVaccines.textContent = perfil.historico_vacinacao || 'Nenhum informado';
             ui.myPatientMeds.textContent = perfil.medicamentos_uso_continuo || 'Nenhum informado';
+
             ui.myFullHistory.innerHTML = '';
             if (!atendimentos || atendimentos.length === 0) {
                 ui.myFullHistory.innerHTML = '<p class="placeholder-text">Você ainda não possui atendimentos registrados.</p>';
@@ -248,7 +251,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 detailsItem.className = 'history-details-item';
                 const summary = document.createElement('summary');
                 summary.className = 'history-summary';
-                summary.innerHTML = `<span>${att.data} - Dr(a). ${att.profissional}</span>`;
+                summary.innerHTML = `<span>${att.data} - Atendido(a) por: <strong>${att.profissional}</strong></span>`;
                 const content = document.createElement('div');
                 content.className = 'history-content';
                 content.innerHTML = `
@@ -257,7 +260,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <p><strong>Procedimentos Realizados:</strong> ${att.procedimentos_realizados || 'Nenhum'}</p>
                     <p><strong>Exames Solicitados:</strong> ${att.solicitacoes_exames || 'Nenhum'}</p>
                     <p><strong>Resultados de Exames:</strong> ${att.resultados_exames || 'Nenhum'}</p>
-                    <p><strong>Nível de Risco:</strong> <span class="risco-${att.risco}">${att.risco}</span></p>
+                    <p><strong>Nível de Risco:</strong> ${att.risco || 'Não classificado'}</p>
                 `;
                 detailsItem.appendChild(summary);
                 detailsItem.appendChild(content);

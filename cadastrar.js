@@ -59,7 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             // Envia os dados para o back-end Java
-            const response = await fetch('http://localhost:8080/prontuario-backend/api/cadastrar', {
+            const response = await fetch('https://prontuario-backend-java.onrender.com', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)
