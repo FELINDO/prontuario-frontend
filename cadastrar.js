@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // URL Base da API de Produção CORRIGIDA
+    // URL CORRIGIDA: Aponta para a raiz do servidor, sem o nome do projeto.
     const API_BASE_URL = 'https://prontuario-backend-java.onrender.com';
 
     // --- Seleção dos Elementos da UI ---
@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
     userTypeSelect.addEventListener('change', togglePatientFields);
-    togglePatientFields(); // Garante o estado inicial correto
+    togglePatientFields();
 
     // --- LÓGICA PARA MOSTRAR/ESCONDER SENHA ---
     togglePassword.addEventListener('click', function () {
@@ -55,9 +55,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)
             });
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-            
+
             const result = await response.json();
+
+            if (!response.ok) {
+                 throw new Error(result.message || `HTTP error! status: ${response.status}`);
+            }
+
             feedback.textContent = result.message;
             feedback.classList.remove('hidden');
 
@@ -68,7 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 feedback.className = 'feedback-text error';
             }
         } catch (error) {
-            feedback.textContent = 'Erro de conexão com o servidor. Tente novamente.';
+            feedback.textContent = error.message;
             feedback.className = 'feedback-text error';
             feedback.classList.remove('hidden');
             console.error("Erro no fetch do cadastro:", error);
