@@ -1,8 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // URL CORRIGIDA: Aponta para a raiz do servidor, sem o nome do projeto.
-    const API_BASE_URL = 'https://prontuario-backend-java.onrender.com';
-
-    // --- Seleção dos Elementos da UI ---
     const userTypeSelect = document.getElementById('userType');
     const patientFields = document.getElementById('patient-specific-fields');
     const registerForm = document.getElementById('register-form');
@@ -10,7 +6,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const passwordInput = document.getElementById('password');
     const togglePassword = document.getElementById('togglePassword');
 
-    // --- LÓGICA PARA MOSTRAR/ESCONDER CAMPOS DO PACIENTE ---
     const togglePatientFields = () => {
         if (userTypeSelect.value === 'Paciente') {
             patientFields.style.display = 'block';
@@ -21,7 +16,6 @@ document.addEventListener('DOMContentLoaded', () => {
     userTypeSelect.addEventListener('change', togglePatientFields);
     togglePatientFields();
 
-    // --- LÓGICA PARA MOSTRAR/ESCONDER SENHA ---
     togglePassword.addEventListener('click', function () {
         const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
         passwordInput.setAttribute('type', type);
@@ -29,49 +23,44 @@ document.addEventListener('DOMContentLoaded', () => {
         this.classList.toggle('active');
     });
     
-    // --- LÓGICA DE SUBMISSÃO DO FORMULÁRIO DE CADASTRO ---
-    registerForm.addEventListener('submit', async (event) => {
+    registerForm.addEventListener('submit', (event) => {
         event.preventDefault();
 
-        const formData = {
+        const users = JSON.parse(localStorage.getItem('prontuario_users')) || [];
+        const newId = users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1;
+        const newCpf = document.getElementById('cpf').value;
+
+        if (users.some(user => user.cpf === newCpf)) {
+            feedback.textContent = 'Erro: Este CPF já está cadastrado.';
+            feedback.className = 'feedback-text error';
+            feedback.classList.remove('hidden');
+            return;
+        }
+
+        const newUser = {
+            id: newId,
             userType: document.getElementById('userType').value,
             name: document.getElementById('name').value,
-            cpf: document.getElementById('cpf').value,
+            cpf: newCpf,
             password: document.getElementById('password').value,
             age: document.getElementById('age').value,
             sexo: document.getElementById('sexo').value,
         };
 
-        if (formData.userType === 'Paciente') {
-            formData.alergias = document.getElementById('alergias').value;
-            formData.historico_vacinacao = document.getElementById('vacinacao').value;
-            formData.medicamentos_uso_continuo = document.getElementById('medicamentos').value;
-            formData.necessita_insulina = document.querySelector('input[name="insulina"]:checked').value;
+        if (newUser.userType === 'Paciente') {
+            newUser.alergias = document.getElementById('alergias').value;
+            newUser.historico_vacinacao = document.getElementById('vacinacao').value;
+            newUser.medicamentos_uso_continuo = document.getElementById('medicamentos').value;
+            newUser.necessita_insulina = document.querySelector('input[name="insulina"]:checked').value === 'true';
         }
+        
+        users.push(newUser);
+        localStorage.setItem('prontuario_users', JSON.stringify(users));
 
-        try {
-            const response = await fetch(`${API_BASE_URL}/api/cadastrar`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
-            });
-            const result = await response.json();
-            if (!response.ok) {
-                 throw new Error(result.message || `HTTP error! status: ${response.status}`);
-            }
-            feedback.textContent = result.message;
-            feedback.classList.remove('hidden');
-            if (result.success) {
-                feedback.className = 'feedback-text success';
-                setTimeout(() => { window.location.href = 'login.html'; }, 2000);
-            } else {
-                feedback.className = 'feedback-text error';
-            }
-        } catch (error) {
-            feedback.textContent = error.message;
-            feedback.className = 'feedback-text error';
-            feedback.classList.remove('hidden');
-            console.error("Erro no fetch do cadastro:", error);
-        }
+        feedback.textContent = 'Cadastro realizado com sucesso! Redirecionando...';
+        feedback.className = 'feedback-text success';
+        feedback.classList.remove('hidden');
+        
+        setTimeout(() => { window.location.href = 'login.html'; }, 2000);
     });
 });

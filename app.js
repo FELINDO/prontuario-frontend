@@ -1,17 +1,19 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // --- GUARDA DE AUTENTICAÇÃO E INICIALIZAÇÃO ---
+    // --- GUARDA DE AUTENTICAÇÃO E CARREGAMENTO DE DADOS ---
     const currentUser = JSON.parse(localStorage.getItem('currentUser'));
     if (!currentUser) {
         window.location.href = 'login.html';
         return;
     }
 
-    // URL base da sua API de produção CORRIGIDA
-    const API_BASE_URL = 'https://prontuario-backend-java.onrender.com';
-
+    // Carrega todos os "bancos de dados" simulados do localStorage
+    let allUsers = JSON.parse(localStorage.getItem('prontuario_users')) || [];
+    let allAtendimentos = JSON.parse(localStorage.getItem('prontuario_atendimentos')) || {};
+    let allSolicitacoes = JSON.parse(localStorage.getItem('prontuario_solicitacoes')) || [];
+    
     let selectedPatientId = null;
 
-    // --- Mapeamento de Elementos da UI ---
+    // --- Mapeamento Completo dos Elementos da UI ---
     const ui = {
         mainMenu: document.getElementById('main-menu-screen'),
         professionalScreen: document.getElementById('professional-screen'),
@@ -75,94 +77,76 @@ document.addEventListener('DOMContentLoaded', () => {
         element.textContent = message;
         element.className = `feedback-text ${isSuccess ? 'success' : 'error'}`;
         element.classList.remove('hidden');
-        setTimeout(() => element.classList.add('hidden'), 4000);
+        setTimeout(() => element.classList.add('hidden'), 3000);
     };
 
-    // --- Funções de Lógica do App ---
-    const handlePatientSearch = async () => {
-        const termo = ui.searchInput.value;
+    // --- Funções de Lógica do App (Modificadas para localStorage) ---
+
+    const handlePatientSearch = () => {
+        const termo = ui.searchInput.value.toLowerCase();
         if (termo.length < 2) {
             ui.searchResultList.innerHTML = '';
             return;
         }
-        try {
-            const response = await fetch(`${API_BASE_URL}/api/buscarPacientes?termo=${termo}`);
-            const pacientes = await response.json();
-            ui.searchResultList.innerHTML = '';
-            if (pacientes.length === 0) {
-                ui.searchResultList.innerHTML = '<p class="placeholder-text">Nenhum paciente encontrado.</p>';
-            } else {
-                pacientes.forEach(p => {
-                    const item = document.createElement('div');
-                    item.className = 'patient-list-item';
-                    item.textContent = `${p.name} - CPF: ${p.cpf}`;
-                    item.onclick = () => loadFullProntuarioForProf(p.id);
-                    ui.searchResultList.appendChild(item);
-                });
-            }
-        } catch (error) {
-            console.error('Erro ao buscar pacientes:', error);
-        }
-    };
-
-    const loadFullProntuarioForProf = async (pacienteId) => {
-        selectedPatientId = pacienteId;
+        const pacientes = allUsers.filter(u => u.userType === 'Paciente' && (u.name.toLowerCase().includes(termo) || u.cpf.includes(termo)));
         ui.searchResultList.innerHTML = '';
-        ui.searchInput.value = '';
-        try {
-            const response = await fetch(`${API_BASE_URL}/api/carregarProntuario?id=${pacienteId}`);
-            const prontuario = await response.json();
-            ui.displayPatientName.textContent = prontuario.perfil.name;
-            ui.professionalHistoryBox.innerHTML = '';
-            if (prontuario.atendimentos.length === 0) {
-                ui.professionalHistoryBox.innerHTML = '<p class="placeholder-text">Este paciente ainda não possui atendimentos.</p>';
-            } else {
-                prontuario.atendimentos.forEach(att => {
-                    const entry = document.createElement('div');
-                    entry.className = 'history-entry';
-                    entry.innerHTML = `<strong>${att.data}</strong> por <strong>${att.profissional}</strong><br><em>Motivo: ${att.motivo}</em><p>${att.descricao || ''}</p>`;
-                    ui.professionalHistoryBox.appendChild(entry);
-                });
-            }
-            ui.patientDetailsSection.classList.remove('hidden');
-        } catch (error) {
-            console.error('Erro ao carregar prontuário:', error);
-            showFeedback(ui.attendanceFeedback, "Não foi possível carregar os dados do prontuário.", false);
+        if (pacientes.length === 0) {
+            ui.searchResultList.innerHTML = '<p class="placeholder-text">Nenhum paciente encontrado.</p>';
+        } else {
+            pacientes.forEach(p => {
+                const item = document.createElement('div');
+                item.className = 'patient-list-item';
+                item.textContent = `${p.name} - CPF: ${p.cpf}`;
+                item.onclick = () => loadFullProntuarioForProf(p.id);
+                ui.searchResultList.appendChild(item);
+            });
         }
     };
 
-    const handleSaveAttendance = async () => {
+    const loadFullProntuarioForProf = (pacienteId) => {
+        selectedPatientId = pacienteId;
+        const perfil = allUsers.find(u => u.id === pacienteId);
+        const atendimentos = allAtendimentos[pacienteId] || [];
+        
+        ui.displayPatientName.textContent = perfil.name;
+        ui.professionalHistoryBox.innerHTML = '';
+        if (atendimentos.length === 0) {
+            ui.professionalHistoryBox.innerHTML = '<p class="placeholder-text">Este paciente ainda não possui atendimentos.</p>';
+        } else {
+            atendimentos.forEach(att => {
+                const entry = document.createElement('div');
+                entry.className = 'history-entry';
+                entry.innerHTML = `<strong>${att.data}</strong> por <strong>${att.profissional}</strong><br><em>Motivo: ${att.motivo_consulta}</em><p>${att.descricao || ''}</p>`;
+                ui.professionalHistoryBox.appendChild(entry);
+            });
+        }
+        ui.patientDetailsSection.classList.remove('hidden');
+    };
+
+    const handleSaveAttendance = () => {
         const atendimentoData = {
-            pacienteId: selectedPatientId,
-            profissionalId: currentUser.id,
-            nomeProfissional: currentUser.name,
-            motivoConsulta: ui.addAttendanceForm.motivo.value,
-            descricaoGeral: ui.addAttendanceForm.descricao.value,
-            procedimentosRealizados: ui.addAttendanceForm.procedimentos.value,
-            solicitacoesExames: ui.addAttendanceForm.solicitacoes.value,
-            resultadosExames: ui.addAttendanceForm.resultados.value,
+            data: new Date().toLocaleString('pt-BR'),
+            profissional: currentUser.name,
+            motivo_consulta: ui.addAttendanceForm.motivo.value,
+            descricao: ui.addAttendanceForm.descricao.value,
+            procedimentos_realizados: ui.addAttendanceForm.procedimentos.value,
+            solicitacoes_exames: ui.addAttendanceForm.solicitacoes.value,
+            resultados_exames: ui.addAttendanceForm.resultados.value,
             risco: ui.addAttendanceForm.risco.value,
         };
-        if (!atendimentoData.motivoConsulta) {
+        if (!atendimentoData.motivo_consulta) {
             showFeedback(ui.attendanceFeedback, "O motivo da consulta é obrigatório.", false);
             return;
         }
-        try {
-            const response = await fetch(`${API_BASE_URL}/api/adicionarAtendimento`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(atendimentoData)
-            });
-            const result = await response.json();
-            showFeedback(ui.attendanceFeedback, result.message, result.success);
-            if (result.success) {
-                loadFullProntuarioForProf(selectedPatientId);
-                Object.values(ui.addAttendanceForm).forEach(input => input.value = '');
-            }
-        } catch (error) {
-            console.error('Erro ao salvar atendimento:', error);
-            showFeedback(ui.attendanceFeedback, 'Erro de conexão ao salvar atendimento.', false);
+        if (!allAtendimentos[selectedPatientId]) {
+            allAtendimentos[selectedPatientId] = [];
         }
+        allAtendimentos[selectedPatientId].unshift(atendimentoData); // Adiciona no início
+        localStorage.setItem('prontuario_atendimentos', JSON.stringify(allAtendimentos));
+        
+        showFeedback(ui.attendanceFeedback, "Atendimento registrado com sucesso!", true);
+        loadFullProntuarioForProf(selectedPatientId);
+        Object.values(ui.addAttendanceForm).forEach(input => input.value = '');
     };
     
     const renderRequests = (requests) => {
@@ -171,9 +155,10 @@ document.addEventListener('DOMContentLoaded', () => {
             ui.requestsListContainer.innerHTML = '<p class="placeholder-text">Nenhuma solicitação pendente no momento.</p>';
         } else {
             requests.forEach(req => {
+                const paciente = allUsers.find(u => u.id === req.pacienteId);
                 const itemDiv = document.createElement('div');
                 itemDiv.className = 'request-item';
-                itemDiv.innerHTML = `<h4>${req.pacienteNome}</h4><p><strong>CPF:</strong> ${req.pacienteCpf} | <strong>Idade:</strong> ${req.pacienteIdade}</p><p class="motivo">"${req.motivoPaciente}"</p>`;
+                itemDiv.innerHTML = `<h4>${paciente.name}</h4><p><strong>CPF:</strong> ${paciente.cpf} | <strong>Idade:</strong> ${paciente.age}</p><p class="motivo">"${req.motivo}"</p>`;
                 itemDiv.addEventListener('click', () => {
                     showScreen('professional-screen');
                     loadFullProntuarioForProf(req.pacienteId);
@@ -183,90 +168,67 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
     
-    const fetchAndShowRequests = async () => {
+    const fetchAndShowRequests = () => {
+        const pendentes = allSolicitacoes.filter(s => s.status === 'Pendente');
+        renderRequests(pendentes);
         showScreen('requests-screen');
-        ui.requestsListContainer.innerHTML = '<p class="placeholder-text">Carregando solicitações...</p>';
-        try {
-            const response = await fetch(`${API_BASE_URL}/api/listarSolicitacoes`);
-            if (!response.ok) throw new Error('Falha ao buscar dados.');
-            const requests = await response.json();
-            renderRequests(requests);
-        } catch (error) {
-            console.error("Erro ao buscar solicitações:", error);
-            ui.requestsListContainer.innerHTML = '<p class="placeholder-text error">Não foi possível carregar as solicitações.</p>';
-        }
     };
 
-    const handleConsultaRequest = async () => {
+    const handleConsultaRequest = () => {
         const motivo = ui.motivoSolicitacaoInput.value.trim();
         if (!motivo) {
             showFeedback(ui.requestFeedback, "Por favor, descreva o motivo da sua solicitação.", false);
             return;
         }
-        const requestData = { pacienteId: currentUser.id, motivo: motivo };
-        try {
-            const response = await fetch(`${API_BASE_URL}/api/solicitarConsulta`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(requestData)
+        const newId = allSolicitacoes.length > 0 ? Math.max(...allSolicitacoes.map(s => s.id)) + 1 : 1;
+        const requestData = { id: newId, pacienteId: currentUser.id, motivo: motivo, status: 'Pendente' };
+        allSolicitacoes.push(requestData);
+        localStorage.setItem('prontuario_solicitacoes', JSON.stringify(allSolicitacoes));
+        showFeedback(ui.requestFeedback, "Sua solicitação foi enviada com sucesso!", true);
+        ui.motivoSolicitacaoInput.value = '';
+    };
+
+    const loadPatientDataAndHistory = (patientId) => {
+        const perfil = allUsers.find(u => u.id === patientId);
+        const atendimentos = allAtendimentos[patientId] || [];
+        
+        ui.myPatientName.textContent = perfil.name;
+        ui.myPatientCpf.textContent = perfil.cpf;
+        ui.myPatientAge.textContent = perfil.age;
+        ui.myPatientSexo.textContent = perfil.sexo;
+        ui.myPatientAllergies.textContent = perfil.alergias || 'Nenhuma informada';
+        ui.myPatientInsulin.textContent = perfil.necessita_insulina ? 'Sim' : 'Não';
+        ui.myPatientVaccines.textContent = perfil.historico_vacinacao || 'Nenhum informado';
+        ui.myPatientMeds.textContent = perfil.medicamentos_uso_continuo || 'Nenhum informado';
+
+        ui.myFullHistory.innerHTML = '';
+        if (atendimentos.length === 0) {
+            ui.myFullHistory.innerHTML = '<p class="placeholder-text">Você ainda não possui atendimentos registrados.</p>';
+        } else {
+            atendimentos.forEach(att => {
+                const detailsItem = document.createElement('details');
+                detailsItem.className = 'history-details-item';
+                const summary = document.createElement('summary');
+                summary.className = 'history-summary';
+                summary.innerHTML = `<span>${att.data} - Atendido(a) por: <strong>${att.profissional}</strong></span>`;
+                const content = document.createElement('div');
+                content.className = 'history-content';
+                content.innerHTML = `
+                    <p><strong>Motivo da Consulta:</strong> ${att.motivo_consulta || 'Não informado'}</p>
+                    <p><strong>Descrição e Anamnese:</strong> ${att.descricao || 'Não informado'}</p>
+                    <p><strong>Procedimentos Realizados:</strong> ${att.procedimentos_realizados || 'Nenhum'}</p>
+                    <p><strong>Exames Solicitados:</strong> ${att.solicitacoes_exames || 'Nenhum'}</p>
+                    <p><strong>Resultados de Exames:</strong> ${att.resultados_exames || 'Nenhum'}</p>
+                    <p><strong>Nível de Risco:</strong> ${att.risco || 'Não classificado'}</p>
+                `;
+                detailsItem.appendChild(summary);
+                detailsItem.appendChild(content);
+                ui.myFullHistory.appendChild(detailsItem);
             });
-            const result = await response.json();
-            showFeedback(ui.requestFeedback, result.message, result.success);
-            if (result.success) ui.motivoSolicitacaoInput.value = '';
-        } catch (error) {
-            showFeedback(ui.requestFeedback, "Erro de conexão ao enviar solicitação.", false);
         }
     };
 
-    const loadPatientDataAndHistory = async (patientId) => {
-        try {
-            const response = await fetch(`${API_BASE_URL}/api/carregarProntuario?id=${patientId}`);
-            if (!response.ok) throw new Error('Falha ao carregar dados do prontuário.');
-            const prontuario = await response.json();
-            const perfil = prontuario.perfil;
-            const atendimentos = prontuario.atendimentos;
-            
-            ui.myPatientName.textContent = perfil.name || '';
-            ui.myPatientCpf.textContent = perfil.cpf || '';
-            ui.myPatientAge.textContent = perfil.age || '';
-            ui.myPatientSexo.textContent = perfil.sexo || '';
-            ui.myPatientAllergies.textContent = perfil.alergias || 'Nenhuma informada';
-            ui.myPatientInsulin.textContent = perfil.necessita_insulina ? 'Sim' : 'Não';
-            ui.myPatientVaccines.textContent = perfil.historico_vacinacao || 'Nenhum informado';
-            ui.myPatientMeds.textContent = perfil.medicamentos_uso_continuo || 'Nenhum informado';
-
-            ui.myFullHistory.innerHTML = '';
-            if (!atendimentos || atendimentos.length === 0) {
-                ui.myFullHistory.innerHTML = '<p class="placeholder-text">Você ainda não possui atendimentos registrados.</p>';
-            } else {
-                atendimentos.forEach(att => {
-                    const detailsItem = document.createElement('details');
-                    detailsItem.className = 'history-details-item';
-                    const summary = document.createElement('summary');
-                    summary.className = 'history-summary';
-                    summary.innerHTML = `<span>${att.data} - Atendido(a) por: <strong>${att.profissional}</strong></span>`;
-                    const content = document.createElement('div');
-                    content.className = 'history-content';
-                    content.innerHTML = `
-                        <p><strong>Motivo da Consulta:</strong> ${att.motivo || 'Não informado'}</p>
-                        <p><strong>Descrição e Anamnese:</strong> ${att.descricao || 'Não informado'}</p>
-                        <p><strong>Procedimentos Realizados:</strong> ${att.procedimentos_realizados || 'Nenhum'}</p>
-                        <p><strong>Exames Solicitados:</strong> ${att.solicitacoes_exames || 'Nenhum'}</p>
-                        <p><strong>Resultados de Exames:</strong> ${att.resultados_exames || 'Nenhum'}</p>
-                        <p><strong>Nível de Risco:</strong> ${att.risco || 'Não classificado'}</p>
-                    `;
-                    detailsItem.appendChild(summary);
-                    detailsItem.appendChild(content);
-                    ui.myFullHistory.appendChild(detailsItem);
-                });
-            }
-        } catch (error) {
-            console.error(error);
-            ui.myFullHistory.innerHTML = '<p class="placeholder-text error">Não foi possível carregar seu histórico.</p>';
-        }
-    };
-
-    // --- CONFIGURAÇÃO INICIAL E ROTEAMENTO POR TIPO DE USUÁRIO ---
+    // --- CONFIGURAÇÃO INICIAL E ROTEAMENTO ---
     document.getElementById('logout-button').addEventListener('click', performLogout);
     document.getElementById('back-to-menu-prof').addEventListener('click', () => {
         ui.patientDetailsSection.classList.add('hidden');
@@ -284,7 +246,7 @@ document.addEventListener('DOMContentLoaded', () => {
         showScreen('patient-screen');
     } else { // Profissionais
         if (ui.userNameSpan) ui.userNameSpan.textContent = currentUser.name;
-        if (ui.lastAccessInfo) ui.lastAccessInfo.textContent = `Último acesso em: ${new Date().toLocaleString('pt-BR')}`;
+        if (ui.lastAccessInfo) ui.lastAccessInfo.textContent = `Último acesso em: ${currentUser.lastAccess}`;
         ui.menuPatientBtn.style.display = 'none';
         ui.menuProfessionalBtn.addEventListener('click', () => showScreen('professional-screen'));
         ui.menuViewRequestsBtn.addEventListener('click', fetchAndShowRequests);
