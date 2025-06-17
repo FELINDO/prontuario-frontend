@@ -6,29 +6,25 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    // URL base da sua API de produção no Render
-    const API_BASE_URL = 'https://prontuario-backend-java.onrender.com/prontuario-backend';
+    // URL base da sua API de produção CORRIGIDA
+    const API_BASE_URL = 'https://prontuario-backend-java.onrender.com';
 
     let selectedPatientId = null;
 
     // --- Mapeamento de Elementos da UI ---
     const ui = {
-        // Telas
         mainMenu: document.getElementById('main-menu-screen'),
         professionalScreen: document.getElementById('professional-screen'),
         patientScreen: document.getElementById('patient-screen'),
         requestsScreen: document.getElementById('requests-screen'),
         sensorScreen: document.getElementById('sensor-screen'),
-        // Elementos Comuns
         userNameSpan: document.getElementById('user-name'),
         lastAccessInfo: document.getElementById('last-access-info'),
-        // Botões de Menu
         menuProfessionalBtn: document.getElementById('menu-professional-button'),
         menuPatientBtn: document.getElementById('menu-patient-button'),
         menuViewRequestsBtn: document.getElementById('menu-view-requests-button'),
         menuSensorBtn: document.getElementById('menu-sensor-button'),
         logoutBtn: document.getElementById('logout-button'),
-        // Tela Profissional
         searchInput: document.getElementById('search-patient-input'),
         searchResultList: document.getElementById('found-patients-list'),
         patientDetailsSection: document.getElementById('patient-details-section'),
@@ -44,7 +40,6 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         addAttendanceBtn: document.getElementById('add-attendance-button'),
         attendanceFeedback: document.getElementById('attendance-feedback'),
-        // Tela Paciente
         myPatientName: document.getElementById('my-patient-name'),
         myPatientCpf: document.getElementById('my-patient-cpf'),
         myPatientAge: document.getElementById('my-patient-age'),
@@ -84,7 +79,6 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // --- Funções de Lógica do App ---
-
     const handlePatientSearch = async () => {
         const termo = ui.searchInput.value;
         if (termo.length < 2) {
@@ -175,18 +169,18 @@ document.addEventListener('DOMContentLoaded', () => {
         ui.requestsListContainer.innerHTML = '';
         if (requests.length === 0) {
             ui.requestsListContainer.innerHTML = '<p class="placeholder-text">Nenhuma solicitação pendente no momento.</p>';
-            return;
-        }
-        requests.forEach(req => {
-            const itemDiv = document.createElement('div');
-            itemDiv.className = 'request-item';
-            itemDiv.innerHTML = `<h4>${req.pacienteNome}</h4><p><strong>CPF:</strong> ${req.pacienteCpf} | <strong>Idade:</strong> ${req.pacienteIdade}</p><p class="motivo">"${req.motivoPaciente}"</p>`;
-            itemDiv.addEventListener('click', () => {
-                showScreen('professional-screen');
-                loadFullProntuarioForProf(req.pacienteId);
+        } else {
+            requests.forEach(req => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'request-item';
+                itemDiv.innerHTML = `<h4>${req.pacienteNome}</h4><p><strong>CPF:</strong> ${req.pacienteCpf} | <strong>Idade:</strong> ${req.pacienteIdade}</p><p class="motivo">"${req.motivoPaciente}"</p>`;
+                itemDiv.addEventListener('click', () => {
+                    showScreen('professional-screen');
+                    loadFullProntuarioForProf(req.pacienteId);
+                });
+                ui.requestsListContainer.appendChild(itemDiv);
             });
-            ui.requestsListContainer.appendChild(itemDiv);
-        });
+        }
     };
     
     const fetchAndShowRequests = async () => {
@@ -286,7 +280,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ui.menuViewRequestsBtn.style.display = 'none';
         ui.menuPatientBtn.style.display = 'none';
         loadPatientDataAndHistory(currentUser.id);
-        ui.submitRequestBtn.addEventListener('click', handleConsultaRequest);
+        if (ui.submitRequestBtn) ui.submitRequestBtn.addEventListener('click', handleConsultaRequest);
         showScreen('patient-screen');
     } else { // Profissionais
         if (ui.userNameSpan) ui.userNameSpan.textContent = currentUser.name;

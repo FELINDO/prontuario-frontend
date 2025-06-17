@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // --- URL Base da API de Produção ---
-    const API_BASE_URL = 'https://prontuario-backend-java.onrender.com/prontuario-backend';
+    // URL Base da API de Produção CORRIGIDA
+    const API_BASE_URL = 'https://prontuario-backend-java.onrender.com';
 
     // --- Seleção dos Elementos da UI ---
     const userTypeSelect = document.getElementById('userType');
@@ -18,29 +18,21 @@ document.addEventListener('DOMContentLoaded', () => {
             patientFields.style.display = 'none';
         }
     };
-
-    // Adiciona o evento que "ouve" as mudanças no dropdown de tipo de usuário
     userTypeSelect.addEventListener('change', togglePatientFields);
-
-    // Garante que o estado inicial (ao carregar a página) esteja correto
-    togglePatientFields();
+    togglePatientFields(); // Garante o estado inicial correto
 
     // --- LÓGICA PARA MOSTRAR/ESCONDER SENHA ---
     togglePassword.addEventListener('click', function () {
-        // Alterna o tipo do input entre 'password' e 'text'
         const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
         passwordInput.setAttribute('type', type);
-        
-        // Alterna o ícone entre 'fa-eye' e 'fa-eye-slash' e a cor
         this.classList.toggle('fa-eye-slash');
         this.classList.toggle('active');
     });
     
     // --- LÓGICA DE SUBMISSÃO DO FORMULÁRIO DE CADASTRO ---
     registerForm.addEventListener('submit', async (event) => {
-        event.preventDefault(); // Impede o recarregamento padrão da página
+        event.preventDefault();
 
-        // Coleta dos dados básicos do formulário
         const formData = {
             userType: document.getElementById('userType').value,
             name: document.getElementById('name').value,
@@ -50,7 +42,6 @@ document.addEventListener('DOMContentLoaded', () => {
             sexo: document.getElementById('sexo').value,
         };
 
-        // Adiciona os dados específicos do paciente APENAS se o tipo for "Paciente"
         if (formData.userType === 'Paciente') {
             formData.alergias = document.getElementById('alergias').value;
             formData.historico_vacinacao = document.getElementById('vacinacao').value;
@@ -59,25 +50,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            // Envia os dados para o back-end Java na URL de produção
             const response = await fetch(`${API_BASE_URL}/api/cadastrar`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)
             });
-
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            
             const result = await response.json();
-
-            // Exibe o feedback (sucesso ou erro) na tela
             feedback.textContent = result.message;
             feedback.classList.remove('hidden');
 
             if (result.success) {
                 feedback.className = 'feedback-text success';
-                // Redireciona para a tela de login após 2 segundos
-                setTimeout(() => { 
-                    window.location.href = 'login.html'; 
-                }, 2000);
+                setTimeout(() => { window.location.href = 'login.html'; }, 2000);
             } else {
                 feedback.className = 'feedback-text error';
             }

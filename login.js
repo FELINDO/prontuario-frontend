@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // --- URL Base da API de Produção ---
-    const API_BASE_URL = 'https://prontuario-backend-java.onrender.com/prontuario-backend';
+    // URL CORRIGIDA: Aponta para a raiz do servidor, sem o nome do projeto.
+    const API_BASE_URL = 'https://prontuario-backend-java.onrender.com';
 
     // --- Seleção dos Elementos da UI ---
     const loginButton = document.getElementById('login-button');
@@ -17,14 +17,18 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         try {
-            // URL CORRIGIDA E COMPLETA
+            // A URL da API é construída a partir da base
             const response = await fetch(`${API_BASE_URL}/api/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(loginData)
             });
 
-            // O erro acontece aqui se a resposta não for JSON (ex: uma página de erro 404 HTML)
+            // Verifica se a resposta do servidor foi um erro (como 404 ou 500)
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
             const result = await response.json();
 
             if (result.success) {
