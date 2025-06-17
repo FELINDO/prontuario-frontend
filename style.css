@@ -1,0 +1,385 @@
+/* --- Estilos Gerais --- */
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 1rem;
+    margin: 0;
+}
+
+.hidden {
+    display: none;
+}
+
+.app-container {
+    background-color: #ffffff;
+    border-radius: 1rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    padding: 2.5rem;
+    width: 100%;
+    max-width: 550px;
+    margin: auto;
+}
+
+.card {
+    padding: 1.5rem;
+    margin-top: 1rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.75rem; /* Adicionado para consistência */
+}
+
+/* --- Telas de Boas-Vindas e Login/Cadastro --- */
+.welcome-container {
+    text-align: center;
+}
+
+.welcome-buttons {
+    margin-top: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.redirect-link {
+    text-align: center;
+    margin-top: 1.5rem;
+    font-size: 0.9rem;
+}
+
+.redirect-link a {
+    color: #3b82f6;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.redirect-link a:hover {
+    text-decoration: underline;
+}
+
+/* --- Textos e Títulos --- */
+.main-title {
+    font-size: 1.875rem;
+    font-weight: 700;
+    text-align: center;
+    color: #1f2937;
+    margin-bottom: 0.5rem;
+}
+
+.subtitle {
+    text-align: center;
+    color: #4b5563;
+    margin-bottom: 1.5rem;
+}
+
+.screen-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    text-align: center;
+    color: #374151;
+    margin-bottom: 1.5rem;
+}
+
+.section-subtitle {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #374151;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 0.5rem;
+}
+
+.sub-subtitle {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #374151;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+/* --- Botões --- */
+.btn {
+    font-weight: 600;
+    padding: 0.8rem 1.5rem;
+    border-radius: 0.75rem;
+    transition: all 0.2s ease-in-out;
+    cursor: pointer;
+    border: none;
+    text-align: center;
+    display: block;
+    text-decoration: none;
+}
+
+.btn-full {
+    width: 100%;
+    box-sizing: border-box; 
+}
+
+.btn-primary {
+    background-color: #3b82f6;
+    color: #ffffff;
+}
+
+.btn-primary:hover {
+    background-color: #2563eb;
+}
+
+.btn-secondary {
+    background-color: #6b7280;
+    color: #ffffff;
+    margin-top: 1rem;
+}
+
+.btn-secondary:hover {
+    background-color: #4b5563;
+}
+
+.btn-danger {
+    background-color: #ef4444;
+    color: #ffffff;
+    margin-top: 1.5rem;
+}
+
+.btn-danger:hover {
+    background-color: #dc2626;
+}
+
+.menu-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* --- Formulários --- */
+.form-group {
+    margin-bottom: 1.25rem;
+}
+
+.form-label {
+    display: block;
+    color: #374151;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.input-field {
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    width: 100%;
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+
+textarea.input-field {
+    height: 7rem;
+    resize: vertical;
+}
+
+/* --- Feedback e Dados Específicos --- */
+.feedback-text {
+    font-size: 0.9rem;
+    text-align: center;
+    margin: 1rem 0;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+}
+
+.feedback-text.success {
+    color: #059669;
+    background-color: #d1fae5;
+}
+
+.feedback-text.error {
+    color: #b91c1c;
+    background-color: #fee2e2;
+}
+
+.sensitive-data {
+    font-weight: 700;
+    color: #b91c1c;
+}
+
+.sensitive-data.unlocked {
+    color: #374151;
+}
+
+/* --- Componentes do App Principal --- */
+.found-patients-list, .requests-list {
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.patient-list-item, .request-item {
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    padding: 1rem;
+    border-radius: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.patient-list-item:hover, .request-item:hover {
+    border-color: #3b82f6;
+    background-color: #eff6ff;
+}
+
+.request-item h4 {
+    margin: 0 0 0.5rem 0;
+    color: #1e40af;
+}
+.request-item p {
+    margin: 0.25rem 0;
+    font-size: 0.9rem;
+}
+.request-item .motivo {
+    font-style: italic;
+    color: #4b5563;
+    margin-top: 0.5rem;
+    padding-left: 1rem;
+    border-left: 3px solid #93c5fd;
+}
+
+.patient-info-text {
+    margin-bottom: 0.5rem;
+}
+
+.history-box {
+    padding: 0.75rem;
+    background-color: #f9fafb;
+    border-radius: 0.5rem;
+    max-height: 15rem;
+    overflow-y: auto;
+    font-size: 0.9rem;
+}
+
+.history-entry {
+    border-bottom: 1px solid #e2e8f0;
+    padding: 0.5rem 0;
+}
+
+.history-entry:last-child {
+    border-bottom: none;
+}
+
+.placeholder-text {
+    color: #6b7280;
+    text-align: center;
+    padding: 1rem;
+}
+
+/* --- Sensores --- */
+.sensor-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 1rem;
+}
+
+.sensor-item {
+    background-color: #f1f5f9;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    text-align: center;
+}
+
+.sensor-label {
+    font-weight: 600;
+}
+
+.sensor-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+}
+
+.temp-color { color: #2563eb; }
+.heart-color { color: #dc2626; }
+.glucose-color { color: #16a34a; }
+
+.update-info {
+    text-align: center;
+    font-size: 0.8rem;
+    margin-top: 1rem;
+    color: #6b7280;
+}
+
+/* --- CORREÇÃO DE ESPAÇAMENTO --- */
+#back-to-menu-requests {
+    margin-top: 1.5rem;
+}
+
+.patient-profile-details p {
+    margin-bottom: 0.75rem;
+    font-size: 0.95rem;
+}
+
+.profile-text-box {
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.5rem;
+    padding: 0.75rem;
+    font-size: 0.9rem;
+    color: #334155;
+    white-space: pre-wrap; /* Mantém as quebras de linha do texto */
+}
+
+/* Estilo para cada item do histórico (tag <details>) */
+.history-details-item {
+    border-bottom: 1px solid #e2e8f0;
+    padding: 0.5rem 0;
+}
+.history-details-item:last-child {
+    border-bottom: none;
+}
+
+/* Estilo para o título clicável (tag <summary>) */
+.history-summary {
+    cursor: pointer;
+    font-weight: 600;
+    padding: 0.5rem;
+    border-radius: 0.25rem;
+    transition: background-color 0.2s ease-in-out;
+}
+.history-summary:hover {
+    background-color: #f1f5f9;
+}
+
+/* Estilo para o conteúdo detalhado que é revelado */
+.history-content {
+    padding: 1rem;
+    margin-top: 0.5rem;
+    background-color: #f8fafc;
+    border-left: 4px solid #3b82f6;
+}
+
+.history-content p {
+    margin: 0 0 0.5rem 0;
+}
+
+
+/* --- Estilos para o botão de mostrar/esconder senha --- */
+
+/* Container que segura o input e o ícone */
+.password-container {
+    position: relative;
+}
+
+/* Posicionamento e estilo do ícone de olho */
+.password-container i {
+    position: absolute;
+    right: 15px;
+    top: 70%; /* Ajustado para alinhar melhor com o texto do input */
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #a0aec0; /* cinza claro */
+}
+
+/* Cor do ícone quando a senha está visível (ativo) */
+.password-container i.active {
+    color: #3b82f6; /* azul primário */
+}

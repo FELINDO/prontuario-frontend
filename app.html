@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema - Meu Prontuário Fácil</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="app" class="app-container card">
+
+        <div id="main-menu-screen">
+            <h2 class="screen-title">Bem-vindo(a), <span id="user-name"></span>!</h2>
+            <p class="subtitle" id="last-access-info"></p>
+            <div class="menu-buttons">
+                <button id="menu-professional-button" class="btn btn-primary btn-full">Acessar Prontuário de Paciente</button>
+                <button id="menu-view-requests-button" class="btn btn-primary btn-full">Visualizar Solicitações de Consulta</button>
+                <button id="menu-patient-button" class="btn btn-primary btn-full">Ver Meu Prontuário</button>
+                <button id="menu-sensor-button" class="btn btn-primary btn-full">Ver Dados dos Sensores</button>
+                <button id="logout-button" class="btn btn-danger btn-full">Sair do Sistema</button>
+            </div>
+        </div>
+        
+        <div id="requests-screen" class="hidden">
+            <h2 class="screen-title">Solicitações de Consulta Pendentes</h2>
+            
+            <div id="requests-list-container" class="requests-list">
+                <p class="placeholder-text">Carregando solicitações...</p>
+            </div>
+    
+            <button id="back-to-menu-requests" class="btn btn-secondary btn-full">Voltar ao Menu</button>
+        </div>
+
+        <div id="professional-screen" class="hidden">
+            <h2 class="screen-title">Área do Profissional</h2>
+            
+            <div class="card">
+                <h3 class="section-subtitle">Buscar Paciente</h3>
+                <div class="form-group">
+                    <input type="text" id="search-patient-input" class="input-field" placeholder="Digite o nome ou CPF do paciente">
+                </div>
+                <div id="found-patients-list" class="found-patients-list"></div>
+            </div>
+        
+            <div id="patient-details-section" class="hidden card">
+                <h3 class="section-subtitle">Prontuário de <span id="display-patient-name"></span></h3>
+                
+                <h4 class="sub-subtitle">Histórico de Atendimentos:</h4>
+                <div id="professional-history-box" class="history-box"></div>
+                
+                <h4 class="sub-subtitle" style="margin-top: 2rem;">Registrar Novo Atendimento</h4>
+                <div class="form-group">
+                    <label for="motivo-consulta" class="form-label">Motivo Principal da Consulta:</label>
+                    <input type="text" id="motivo-consulta" class="input-field">
+                </div>
+                <div class="form-group">
+                    <label for="descricao-geral" class="form-label">Descrição Geral e Anamnese:</label>
+                    <textarea id="descricao-geral" class="input-field"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="procedimentos" class="form-label">Procedimentos Realizados:</label>
+                    <textarea id="procedimentos" class="input-field"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="solicitacoes-exames" class="form-label">Solicitações de Exames:</label>
+                    <textarea id="solicitacoes-exames" class="input-field"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="resultados-exames" class="form-label">Resultados de Exames Apresentados:</label>
+                    <textarea id="resultados-exames" class="input-field"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="risk-level-select" class="form-label">Nível de Risco:</label>
+                    <select id="risk-level-select" class="input-field">
+                        <option value="verde">Verde</option>
+                        <option value="azul">Azul</option>
+                        <option value="amarelo">Amarelo</option>
+                        <option value="vermelho">Vermelho</option>
+                    </select>
+                </div>
+                <button id="add-attendance-button" class="btn btn-primary btn-full">Salvar Atendimento</button>
+                <p id="attendance-feedback" class="feedback-text hidden"></p>
+            </div>
+        
+            <button id="back-to-menu-prof" class="btn btn-secondary btn-full">Voltar ao Menu</button>
+        </div>
+
+
+        <div id="patient-screen" class="hidden">
+            <h2 class="screen-title">Minha Área do Paciente</h2>
+
+            <div class="card">
+                <h3 class="section-subtitle">Meu Perfil e Prontuário</h3>
+                
+                <div class="patient-profile-details">
+                    <p><strong>Nome:</strong> <span id="my-patient-name"></span></p>
+                    <p><strong>CPF:</strong> <span id="my-patient-cpf"></span></p>
+                    <p><strong>Idade:</strong> <span id="my-patient-age"></span></p>
+                    <p><strong>Sexo:</strong> <span id="my-patient-sexo"></span></p>
+                    <p><strong>Alergias:</strong> <span id="my-patient-allergies"></span></p>
+                    <p><strong>Necessita Insulina:</strong> <span id="my-patient-insulin"></span></p>
+                    <p><strong>Histórico de Vacinação:</strong></p>
+                    <p class="profile-text-box" id="my-patient-vaccines"></p>
+                    <p><strong>Medicamentos de Uso Contínuo:</strong></p>
+                    <p class="profile-text-box" id="my-patient-meds"></p>
+                </div>
+
+                <h4 class="sub-subtitle">Histórico de Atendimentos:</h4>
+                <div id="my-full-history" class="history-box">
+                    <p class="placeholder-text">Carregando histórico...</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3 class="section-subtitle">Solicitar Nova Consulta</h3>
+                <div class="form-group">
+                    <label for="motivo-solicitacao" class="form-label">Qual o motivo da sua solicitação?</label>
+                    <textarea id="motivo-solicitacao" class="input-field" placeholder="Ex: Estou com febre e dor de cabeça há 2 dias..."></textarea>
+                </div>
+                <button id="submit-request-button" class="btn btn-primary btn-full">Enviar Solicitação</button>
+                <p id="request-feedback" class="feedback-text hidden"></p>
+            </div>
+
+            <button id="back-to-menu-patient" class="btn btn-danger btn-full">Sair do Sistema</button>
+        </div>
+
+
+        <div id="sensor-screen" class="hidden">
+            <h2 class="screen-title">Dados de Saúde dos Sensores</h2>
+            <div class="sensor-grid card">
+                <div class="sensor-item"><p class="sensor-label">Temperatura:</p><p id="temp-display" class="sensor-value temp-color">-- °C</p></div>
+                <div class="sensor-item"><p class="sensor-label">Coração:</p><p id="heart-display" class="sensor-value heart-color">-- bpm</p></div>
+                <div class="sensor-item"><p class="sensor-label">Glicose:</p><p id="glucose-display" class="sensor-value glucose-color">-- mg/dL</p></div>
+            </div>
+            <p class="update-info">Os dados são atualizados a cada 5 segundos (simulação).</p>
+            <button id="back-to-menu-sensor" class="btn btn-secondary btn-full">Voltar ao Menu Principal</button>
+        </div>
+
+    </div>
+    
+    <script src="app.js" defer></script>
+</body>
+</html>
